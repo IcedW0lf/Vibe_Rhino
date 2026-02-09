@@ -1,0 +1,18 @@
+# Build artifacts
+bin/
+obj/
+.vs/
+
+# Python
+__pycache__/
+*.pyc
+
+# Rhino
+*.3dm
+
+# IDE
+.vscode/
+
+# OS
+Thumbs.db
+Desktop.ini
