@@ -10,6 +10,9 @@ __pycache__/
 # Rhino
 *.3dm
 
+# Logs
+*.log
+
 # IDE
 .vscode/
 
