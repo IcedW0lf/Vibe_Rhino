@@ -1,6 +1,7 @@
 import Rhino.Geometry as rg
 
 
+
 def build(doc):
     # Clear and rebuild happens in the watcher.
     doc.Objects.AddPoint(rg.Point3d(0, 0, 0))

@@ -1,5 +1,6 @@
 import os
 import traceback
+import datetime
 
 import Rhino
 import scriptcontext as sc
@@ -7,10 +8,11 @@ import System
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_SCRIPT = os.path.join(BASE_DIR, "vibe_script.py")
+TARGET_SCRIPT = os.path.join(os.path.dirname(BASE_DIR), "sketch", "sketch_minimumSurface.py")
 
 _STICKY_KEY = "vibe_rhino_watcher"
 _DEBOUNCE_SECONDS = 0.5
+_LOG_PATH = os.path.join(BASE_DIR, "watcher.log")
 
 
 class _State(object):
@@ -30,13 +32,37 @@ def _state():
     return st
 
 
+def _clear_log():
+    try:
+        dir_name = os.path.dirname(_LOG_PATH)
+        if dir_name and not os.path.isdir(dir_name):
+            os.makedirs(dir_name)
+        with open(_LOG_PATH, "w") as fd:
+            fd.write("")
+    except Exception:
+        Rhino.RhinoApp.WriteLine("[watcher] failed to clear watcher.log")
+
+
+def _write_to_log(msg):
+    try:
+        dir_name = os.path.dirname(_LOG_PATH)
+        if dir_name and not os.path.isdir(dir_name):
+            os.makedirs(dir_name)
+        with open(_LOG_PATH, "a") as fd:
+            timestamp = datetime.datetime.utcnow().isoformat()
+            fd.write("{0} {1}\n".format(timestamp, msg))
+    except Exception:
+        Rhino.RhinoApp.WriteLine("[watcher] failed to write watcher.log")
+
+
 def log(msg):
     Rhino.RhinoApp.WriteLine(msg)
+    _write_to_log(msg)
 
 
 def _load_build():
     if not os.path.isfile(TARGET_SCRIPT):
-        log("[watcher] vibe_script.py not found.")
+        log("[watcher] target script not found.")
         return
 
     ns = {}
@@ -50,13 +76,13 @@ def _load_build():
             System.Threading.Thread.Sleep(50)
 
     if code is None:
-        log("[watcher] failed to read vibe_script.py (file busy).")
+        log("[watcher] failed to read target script (file busy).")
         return
 
     exec(compile(code, TARGET_SCRIPT, "exec"), ns)
     build = ns.get("build", None)
     if not callable(build):
-        log("[watcher] build(doc) not found in vibe_script.py.")
+        log("[watcher] build(doc) not found in target script.")
         return
 
     doc = sc.doc or Rhino.RhinoDoc.ActiveDoc
@@ -64,7 +90,7 @@ def _load_build():
         log("[watcher] no active document.")
         return
 
-    doc.Objects.Clear()
+    # doc.Objects.Clear()
     build(doc)
     doc.Views.Redraw()
     log("[watcher] geometry updated.")
@@ -125,7 +151,7 @@ def start():
 
     if st.idle_hooked:
         return
-
+    _clear_log()
     log("[watcher] loading...")
 
     Rhino.RhinoApp.Idle += _on_idle
