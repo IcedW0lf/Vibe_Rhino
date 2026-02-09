@@ -13,6 +13,7 @@ Install & Start the Watcher (once per Rhino session)
    ```
    _RunPythonScript 
    ```
+   And then select the rhino_watcher.py file in your local path.
    Rhino’s command line should print `[watcher] started.` and create `src/watcher/watcher.log`.
 4) Leave Rhino open; the watcher stays attached to Rhino’s idle event until you close Rhino.
 
