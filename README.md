@@ -16,7 +16,7 @@ Install & Start the Watcher (once per Rhino session)
    Rhino’s command line should print `[watcher] started.` and create `src/watcher/watcher.log`.
 4) Leave Rhino open; the watcher stays attached to Rhino’s idle event until you close Rhino.
 
-Using Hot Reload with Codex
+Using Hot Reload in IDE
 - Edit the target script (e.g., `src/sketch/sketch_minimumSurface.py`).
 - Save the file; within ~0.5s the watcher reloads and redraws the active Rhino document.
 - Use `src/sketch/sketch_script.py` as a minimal template if you want to start from a clean example.
@@ -28,4 +28,4 @@ Project Layout
 
 Troubleshooting
 - No reload? Confirm `TARGET_SCRIPT` points to an existing file and Rhino has an active document.
-- For LLM agent to check error at sketch level, point `src/watcher/watcher.log` to it for errors; it is cleared every time you start the watcher.
+- For LLM agent to check error at sketch level, point `src/watcher/watcher.log` to it for checking errors; it is cleared every time you start the watcher.
