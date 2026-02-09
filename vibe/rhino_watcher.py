@@ -11,6 +11,7 @@ TARGET_SCRIPT = os.path.join(BASE_DIR, "vibe_script.py")
 
 _STICKY_KEY = "vibe_rhino_watcher"
 _DEBOUNCE_SECONDS = 0.5
+_RESTORE_SELECTION = False  # keep doc untouched; no forced reselection
 
 
 class _State(object):
@@ -39,6 +40,19 @@ def _load_build():
         log("[watcher] vibe_script.py not found.")
         return
 
+    # Capture current selection (it may be lost during reload). Only overwrite the cache when non-empty.
+    doc = sc.doc or Rhino.RhinoDoc.ActiveDoc
+    if doc:
+        selected = list(doc.Objects.GetSelectedObjects(False, False) or [])
+        if selected:
+            sc.sticky["vibe_selected_ids"] = [o.Id for o in selected if not o.IsDeleted]
+            log("[watcher] selection cached: {} objects".format(len(sc.sticky["vibe_selected_ids"])))
+        else:
+            log("[watcher] no active selection; keeping previous cache ({})".format(len(sc.sticky.get("vibe_selected_ids", []))))
+        log("[watcher] selection before build: {}".format(len(selected)))
+    else:
+        sc.sticky["vibe_selected_ids"] = []
+
     ns = {}
     code = None
     for _ in range(5):
@@ -64,8 +78,10 @@ def _load_build():
         log("[watcher] no active document.")
         return
 
-    doc.Objects.Clear()
+    # Run build without clearing the document
     build(doc)
+
+    # No reselection; leave doc state untouched
     doc.Views.Redraw()
     log("[watcher] geometry updated.")
 
@@ -133,6 +149,19 @@ def start():
 
     log("[watcher] started.")
     _load_build()
+
+
+def stop():
+    """Detach the idle handler to stop reloading vibe_script.py."""
+    st = _state()
+    if not st.idle_hooked:
+        return
+    try:
+        Rhino.RhinoApp.Idle -= _on_idle
+    except Exception:
+        pass
+    st.idle_hooked = False
+    log("[watcher] stopped.")
 
 
 start()
