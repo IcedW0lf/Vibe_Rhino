@@ -7,7 +7,7 @@ import System
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_SCRIPT = os.path.join(BASE_DIR, "vibe_script.py")
+TARGET_SCRIPT = os.path.join(BASE_DIR, "vibe_asymptotic_script.py")
 
 _STICKY_KEY = "vibe_rhino_watcher"
 _DEBOUNCE_SECONDS = 0.5
